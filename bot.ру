@@ -1,22 +1,24 @@
+import asyncio
+import logging
+import sys
 import requests
-from aiogram import Bot, Dispatcher, types, executor
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
 
-# Ваши ключи
 API_TOKEN = '8885818986:AAGTwtnX0sEiYiOHmiWuCChnmC1jQFBYBSc'
 WEATHER_API_KEY = 'D246941f228ccd1e1af3055d307fd96c'
 
-bot = Bot(token=API_TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher()
 
-@dp.message_handler(commands=['start'])
+@dp.message(Command("start"))
 async def send_welcome(message: types.Message):
     await message.reply("Привет! Я твой погодный бот. Напиши мне название города, и я скажу погоду.")
 
-@dp.message_handler()
+@dp.message()
 async def get_weather(message: types.Message):
     city = message.text
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric&lang=ru"
-    
+
     response = requests.get(url).json()
     if response.get("cod") == 200:
         temp = response["main"]["temp"]
@@ -27,6 +29,10 @@ async def get_weather(message: types.Message):
     else:
         await message.reply("Город не найден. Проверь правильность написания и попробуй еще раз!")
 
-if __name__ == '__main__':
-    print("Бот успешно запущен и ожидает сообщений...")
-    executor.start_polling(dp, skip_updates=True)
+async def main():
+    bot = Bot(token=API_TOKEN)
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    asyncio.run(main())

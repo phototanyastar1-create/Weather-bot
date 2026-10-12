@@ -1,0 +1,32 @@
+import requests
+from aiogram import Bot, Dispatcher, types, executor
+
+# Ваши ключи
+API_TOKEN = '8885818986:AAGTwtnX0sEiYiOHmiWuCChnmC1jQFBYBSc'
+WEATHER_API_KEY = 'D246941f228ccd1e1af3055d307fd96c'
+
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher(bot)
+
+@dp.message_handler(commands=['start'])
+async def send_welcome(message: types.Message):
+    await message.reply("Привет! Я твой погодный бот. Напиши мне название города, и я скажу погоду.")
+
+@dp.message_handler()
+async def get_weather(message: types.Message):
+    city = message.text
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric&lang=ru"
+    
+    response = requests.get(url).json()
+    if response.get("cod") == 200:
+        temp = response["main"]["temp"]
+        desc = response["weather"][0]["description"]
+        city_name = response["name"]
+        text = f"Погода в городе **{city_name}**:\n🌡 Температура: {temp}°C\n☁️ {desc.capitalize()}"
+        await message.reply(text, parse_mode="Markdown")
+    else:
+        await message.reply("Город не найден. Проверь правильность написания и попробуй еще раз!")
+
+if __name__ == '__main__':
+    print("Бот успешно запущен и ожидает сообщений...")
+    executor.start_polling(dp, skip_updates=True)

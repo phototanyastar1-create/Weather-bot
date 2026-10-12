@@ -4,7 +4,7 @@ import requests
 from threading import Thread
 from flask import Flask
 
-API_TOKEN = '8885818986:AAGTwtnX0sEiYiOHmiWuCChnmC1jQFBYBSc'
+API_TOKEN = '8717250637:AAFKF0_-S3fSM5wgw185m-UzNA6KOVBflU4'
 WEATHER_API_KEY = 'D246941f228ccd1e1af3055d307fd96c'
 
 app = Flask('')

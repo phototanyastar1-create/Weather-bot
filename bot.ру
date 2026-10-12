@@ -1,38 +1,36 @@
-import asyncio
-import logging
-import sys
-import requests
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
-
+import time
+import os
+from threading import Thread
+from flask import Flask
 API_TOKEN = '8885818986:AAGTwtnX0sEiYiOHmiWuCChnmC1jQFBYBSc'
 WEATHER_API_KEY = 'D246941f228ccd1e1af3055d307fd96c'
-
-dp = Dispatcher()
-
-@dp.message(Command("start"))
-async def send_welcome(message: types.Message):
-    await message.reply("Привет! Я твой погодный бот. Напиши мне название города, и я скажу погоду.")
-
-@dp.message()
-async def get_weather(message: types.Message):
-    city = message.text
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric&lang=ru"
-
-    response = requests.get(url).json()
-    if response.get("cod") == 200:
-        temp = response["main"]["temp"]
-        desc = response["weather"][0]["description"]
-        city_name = response["name"]
-        text = f"Погода в городе **{city_name}**:\n🌡 Температура: {temp}°C\n☁️ {desc.capitalize()}"
-        await message.reply(text, parse_mode="Markdown")
-    else:
-        await message.reply("Город не найден. Проверь правильность написания и попробуй еще раз!")
-
-async def main():
-    bot = Bot(token=API_TOKEN)
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main())
+app = Flask('')
+@app.route('/')
+def home():
+return "Бот работает!"
+def run_flask():
+port = int(os.environ.get("PORT", 10000))
+app.run(host='0.0.0.0', port=port)
+def get_updates(offset=None):
+url = f"https://api.telegram.org/bot{API_TOKEN}/getUpdates"
+if offset:
+url += f"?offset={offset}"
+return requests.get(url).json()
+def send_message(chat_id, text):
+url = f"https://api.telegram.org/bot{API_TOKEN}/sendMessage"
+requests.post(url, json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"})
+def telegram_bot():
+print("Telegram бот запущен...")
+offset = None
+while True:
+try:
+updates = get_updates(offset)
+for update in updates.get("result", []):
+offset = update["update_id"] + 1
+if "message" in update and "text" in update["message"]:
+chat_id = update["message"]["chat"]["id"]
+text = update["message"]["text"]
+if name == "main":
+t = Thread(target=run_flask)
+t.start()
+telegram_bot()
